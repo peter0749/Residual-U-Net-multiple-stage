@@ -155,11 +155,11 @@ def mean_iou(y_true, y_pred):
         prec.append(score)
     return K.mean(K.stack(prec), axis=0)
 
-def IOU_approximation_loss(y_true, y_pred): ## actually F1 / DICE score
+def IOU_approximation_loss(y_true, y_pred):
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     insc = K.sum(y_true_f * y_pred_f)
-    return -2 * (insc + 1.) / (K.sum(y_true_f) + K.sum(y_pred_f) + 1.)
+    return -(insc + 1.) / (K.sum(y_true_f) + K.sum(y_pred_f) - insc + 1.)
 
 model.summary()
 model.compile(optimizer='adam', 
@@ -238,7 +238,7 @@ def data_generator(data, label, batch_size=4, val=False):
                 img = cv2.copyMakeBorder(img, y//2, y//2, x//2, x//2, cv2.BORDER_REFLECT)
                 lab = cv2.copyMakeBorder(lab, y//2, y//2, x//2, x//2, cv2.BORDER_REFLECT)
                 y, x, _ = img.shape
-                rotT = np.random.uniform(-45,45)
+                rotT = np.random.uniform(-60,60)
                 M = cv2.getRotationMatrix2D((x/2, y/2), rotT, 1)
                 img = cv2.warpAffine(img, M, (x, y))
                 lab = cv2.warpAffine(lab, M, (x, y))
@@ -325,10 +325,10 @@ class Peek(Callback):
             cv2.imwrite(self.pred_path+'/%d/%02d.jpg'%(epoch, i), img)
 
 
-# In[12]:
+# In[ ]:
 
 
-BATCH_SIZE=12
+BATCH_SIZE=8
 EPOCHS=500
 
 # os.makedirs('/hdd/dataset/nuclei_dataset/weights', exist_ok=True)
