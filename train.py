@@ -3,7 +3,6 @@
 
 # In[1]:
 
-import matplotlib.pyplot as plt
 import os
 os.environ['CUDA_VISIBLE_DEVICES']='0'
 from PIL import Image
@@ -15,7 +14,7 @@ import cv2
 # In[2]:
 
 
-data_paths = glob.glob('/hdd/dataset/nuclei_dataset/stage1_train/*/')
+data_paths = glob.glob('./stage1_train/*/')
 
 
 # In[3]:
@@ -322,18 +321,18 @@ class Peek(Callback):
 # In[ ]:
 
 
-BATCH_SIZE=32
+BATCH_SIZE=4
 EPOCHS=500
 
-os.makedirs('/hdd/dataset/nuclei_dataset/weights', exist_ok=True)
+os.makedirs('./weights', exist_ok=True)
 
 model.fit_generator(generator=data_generator(X_train, y_train, batch_size=BATCH_SIZE, val=False), steps_per_epoch=int( len(X_train)//BATCH_SIZE ), epochs=EPOCHS, validation_data=data_generator(X_val, y_val, batch_size=BATCH_SIZE, val=True), validation_steps=int( len(X_val)//BATCH_SIZE ), 
                     callbacks=[
-                        #TensorBoard(log_dir=TENSORBOARD_PATH),
+                        TensorBoard(log_dir=TENSORBOARD_PATH),
                         #EarlyStopping(patience=15),
-                        ModelCheckpoint('/hdd/dataset/nuclei_dataset/weights/weights.{epoch:03d}-{val_loss:.2f}.hdf5'),
+                        ModelCheckpoint('./weights/weights.{epoch:03d}-{val_loss:.2f}-{val_conv2d_232_mean_iou:.2f}.hdf5'),
                         CSVLogger('train.log.csv'),
-                        Peek('/hdd/dataset/nuclei_dataset/vis', 10)
+                        Peek('./vis', 10)
                     ])
 
 
