@@ -135,10 +135,9 @@ def build_stage(inputs, last=None, id_='st1'):
     return outputs, o1
 
 inputs = Input((IMG_DIM, IMG_DIM, 3))
-out1, t1 = build_stage(inputs, None, 'st1')
-out2, t2 = build_stage(out1, t1, 'st2')
-out3, _ = build_stage(out2, t2, 'st3')
-model = Model(inputs=[inputs], outputs=[out1, out2, out3])
+out, _ = build_stage(inputs, None, 'st1')
+
+model = Model(inputs=[inputs], outputs=[out])
 
 
 # In[6]:
@@ -276,7 +275,7 @@ def data_generator(data, label, batch_size=4, val=False):
         index = index + 1
         if index%batch_size==0:
             index = 0 if index%len(data)==0 else index
-            yield (dat_que, [lab_que, lab_que, lab_que])
+            yield (dat_que, lab_que)
         if index%len(data)==0:
             data, label = shuffle(data, label)
         
@@ -324,7 +323,7 @@ class Peek(Callback):
             cv2.imwrite(self.pred_path+'/%d/%02d.jpg'%(epoch, i), img)
 
 
-# In[ ]:
+# In[12]:
 
 
 BATCH_SIZE=4
