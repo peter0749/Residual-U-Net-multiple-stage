@@ -201,6 +201,8 @@ print(len(data))
 # In[8]:
 
 
+
+
 # In[9]:
 
 
@@ -315,7 +317,7 @@ class Peek(Callback):
             cv2.imwrite(self.gt_path+'/%02d.jpg'%ii, lab)
             self.data[ii, :, :, :] = img
     def on_epoch_end(self, epoch, logs):
-        preds = self.model.predict(self.data, batch_size=min(16, len(self.data)))[-1] * 255.
+        preds = self.model.predict(self.data, batch_size=min(16, len(self.data))) * 255.
         preds = preds.astype(np.uint8)
         preds = np.squeeze(preds)
         os.makedirs(self.pred_path+'/%d'%epoch, exist_ok=True)
@@ -326,7 +328,7 @@ class Peek(Callback):
 # In[12]:
 
 
-BATCH_SIZE=4
+BATCH_SIZE=12
 EPOCHS=500
 
 # os.makedirs('/hdd/dataset/nuclei_dataset/weights', exist_ok=True)
@@ -336,8 +338,8 @@ model.fit_generator(generator=data_generator(X_train, y_train, batch_size=BATCH_
                     callbacks=[
                         TensorBoard(log_dir=TENSORBOARD_PATH),
                         #EarlyStopping(patience=15),
-                        #ModelCheckpoint('/hdd/dataset/nuclei_dataset/weights/weights.{epoch:03d}-{val_loss:.2f}-{val_st3_out_mean_iou:.2f}.hdf5'),
-                        ModelCheckpoint('./weights/weights.{epoch:03d}-{val_loss:.2f}-{val_st3_out_mean_iou:.2f}.hdf5'),
+                        #ModelCheckpoint('/hdd/dataset/nuclei_dataset/weights/weights.{epoch:03d}-{val_loss:.2f}-{val_st1_out_mean_iou:.2f}.hdf5'),
+                        ModelCheckpoint('./weights/weights.{epoch:03d}-{val_loss:.2f}-{val_st1_out_mean_iou:.2f}.hdf5'),
                         CSVLogger('train.log.csv'),
                         #Peek('/hdd/dataset/nuclei_dataset/vis', 10)
                         Peek('./vis', 10)
