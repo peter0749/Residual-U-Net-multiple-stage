@@ -243,7 +243,7 @@ def data_generator(data, label, batch_size=4, val=False):
         index = index + 1
         if index%batch_size==0:
             index = 0 if index%len(data)==0 else index
-            yield (dat_que, [lab_que, lab_que, lab_que])
+            yield (dat_que, [lab_que, lab_que, lab_que, lab_que])
         if index%len(data)==0:
             data, label = shuffle(data, label)
         
