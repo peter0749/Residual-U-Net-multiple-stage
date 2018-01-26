@@ -3,6 +3,7 @@
 
 # In[1]:
 
+
 import os
 os.environ['CUDA_VISIBLE_DEVICES']='0'
 from PIL import Image
@@ -14,7 +15,8 @@ import cv2
 # In[2]:
 
 
-data_paths = glob.glob('/hdd/dataset/nuclei_dataset/stage1_train/*/')
+# data_paths = glob.glob('/hdd/dataset/nuclei_dataset/stage1_train/*/')
+data_paths = glob.glob('./stage1_train/*/')
 
 
 # In[3]:
@@ -45,7 +47,7 @@ from keras.optimizers import Adam
 
 from keras.layers import Lambda, Add, Activation
 
-def build_stage(inputs, last=None, id_="st1"):
+def build_stage(inputs, last=None, id_='st1'):
     def conv(f, k=3, act='relu'):
         return Conv2D(f, (k, k), activation=act, kernel_initializer='he_normal', padding='same')
     def _incept_conv(inputs, f, dropout=0.1, chs=[0.15, 0.5, 0.25, 0.1]):
@@ -85,8 +87,6 @@ def build_stage(inputs, last=None, id_="st1"):
         return MaxPooling2D((2, 2))
     def up():
         return UpSampling2D()
-    def avepool(act='sigmoid', name=None):
-        return Conv2D(1, (1, 1), activation=act, name=name)
     
     if last is None:
         c1 = Lambda(lambda x: x / 255) (inputs) # 1st stage input, an image
@@ -131,13 +131,13 @@ def build_stage(inputs, last=None, id_="st1"):
     c11 = concatenate([u11, c1])
     c11 = _res_conv(c11, 16, 3, dropout=0.1)
     
-    outputs = avepool('sigmoid', name=id_+'_out') (c11)
+    outputs = Conv2D(1, (1, 1), activation='sigmoid', name=id_+'_out') (c11)
     return outputs, o1
 
 inputs = Input((IMG_DIM, IMG_DIM, 3))
 out1, t1 = build_stage(inputs, None, 'st1')
 out2, t2 = build_stage(out1, t1, 'st2')
-out3, t3 = build_stage(out2, t2, 'st3')
+out3, _ = build_stage(out2, t2, 'st3')
 model = Model(inputs=[inputs], outputs=[out1, out2, out3])
 
 
@@ -156,9 +156,15 @@ def mean_iou(y_true, y_pred):
         prec.append(score)
     return K.mean(K.stack(prec), axis=0)
 
+def IOU_approximation_loss(y_true, y_pred): ## actually F1 / DICE score
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    insc = K.sum(y_true_f * y_pred_f)
+    return -2 * (insc + 1.) / (K.sum(y_true_f) + K.sum(y_pred_f) + 1.)
+
 model.summary()
 model.compile(optimizer='adam', 
-              loss='binary_crossentropy',
+              loss=IOU_approximation_loss,
               metrics=[mean_iou]
              )
 
@@ -281,7 +287,7 @@ def data_generator(data, label, batch_size=4, val=False):
 
 from sklearn.model_selection import train_test_split
 from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, CSVLogger
-# TENSORBOARD_PATH = './tfboard'
+TENSORBOARD_PATH = './tfboard'
 
 X_train, X_val, y_train, y_val = train_test_split(data, label, test_size=0.1, shuffle=True)
 
@@ -324,15 +330,17 @@ class Peek(Callback):
 BATCH_SIZE=4
 EPOCHS=500
 
-os.makedirs('/hdd/dataset/nuclei_dataset/weights', exist_ok=True)
+# os.makedirs('/hdd/dataset/nuclei_dataset/weights', exist_ok=True)
+os.makedirs('./weights', exist_ok=True)
 
 model.fit_generator(generator=data_generator(X_train, y_train, batch_size=BATCH_SIZE, val=False), steps_per_epoch=int( len(X_train)//BATCH_SIZE ), epochs=EPOCHS, validation_data=data_generator(X_val, y_val, batch_size=BATCH_SIZE, val=True), validation_steps=int( len(X_val)//BATCH_SIZE ), 
                     callbacks=[
-                        #TensorBoard(log_dir=TENSORBOARD_PATH),
+                        TensorBoard(log_dir=TENSORBOARD_PATH),
                         #EarlyStopping(patience=15),
-                        ModelCheckpoint('/hdd/dataset/nuclei_dataset/weights/weights.{epoch:03d}-{val_loss:.2f}-{val_st3_out_mean_iou:.2f}.hdf5'),
+                        #ModelCheckpoint('/hdd/dataset/nuclei_dataset/weights/weights.{epoch:03d}-{val_loss:.2f}-{val_st3_out_mean_iou:.2f}.hdf5'),
+                        ModelCheckpoint('./weights/weights.{epoch:03d}-{val_loss:.2f}-{val_st3_out_mean_iou:.2f}.hdf5'),
                         CSVLogger('train.log.csv'),
-                        Peek('/hdd/dataset/nuclei_dataset/vis', 10)
+                        #Peek('/hdd/dataset/nuclei_dataset/vis', 10)
+                        Peek('./vis', 10)
                     ])
-
 
