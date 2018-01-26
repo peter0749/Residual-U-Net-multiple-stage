@@ -138,7 +138,8 @@ inputs = Input((IMG_DIM, IMG_DIM, 3))
 out1, t1 = build_stage(inputs, None, 'st1')
 out2, t2 = build_stage(out1, t1, 'st2')
 out3, t3 = build_stage(out2, t2, 'st3')
-model = Model(inputs=[inputs], outputs=[out1, out2, out3])
+out4, _  = build_stage(out3, t3, 'st4')
+model = Model(inputs=[inputs], outputs=[out1, out2, out3, out4])
 
 
 # In[6]:
@@ -270,7 +271,7 @@ def data_generator(data, label, batch_size=4, val=False):
         index = index + 1
         if index%batch_size==0:
             index = 0 if index%len(data)==0 else index
-            yield (dat_que, [lab_que, lab_que, lab_que])
+            yield (dat_que, [lab_que, lab_que, lab_que, lab_que])
         if index%len(data)==0:
             data, label = shuffle(data, label)
         
@@ -330,7 +331,7 @@ model.fit_generator(generator=data_generator(X_train, y_train, batch_size=BATCH_
                     callbacks=[
                         #TensorBoard(log_dir=TENSORBOARD_PATH),
                         #EarlyStopping(patience=15),
-                        ModelCheckpoint('/hdd/dataset/nuclei_dataset/weights/weights.{epoch:03d}-{val_loss:.2f}-{val_st3_out_mean_iou:.2f}.hdf5'),
+                        ModelCheckpoint('/hdd/dataset/nuclei_dataset/weights/weights.{epoch:03d}-{val_loss:.2f}-{val_st4_out_mean_iou:.2f}.hdf5'),
                         CSVLogger('train.log.csv'),
                         Peek('/hdd/dataset/nuclei_dataset/vis', 10)
                     ])
