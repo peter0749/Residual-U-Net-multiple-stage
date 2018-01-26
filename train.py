@@ -338,8 +338,8 @@ model.fit_generator(generator=data_generator(X_train, y_train, batch_size=BATCH_
                     callbacks=[
                         TensorBoard(log_dir=TENSORBOARD_PATH),
                         #EarlyStopping(patience=15),
-                        #ModelCheckpoint('/hdd/dataset/nuclei_dataset/weights/weights.{epoch:03d}-{val_loss:.2f}-{val_out_mean_iou:.2f}.hdf5'),
-                        ModelCheckpoint('./weights/weights.{epoch:03d}-{val_loss:.2f}-{val_out_mean_iou:.2f}.hdf5'),
+                        #ModelCheckpoint('/hdd/dataset/nuclei_dataset/weights/weights.{epoch:03d}-{val_loss:.2f}-{val_mean_iou:.2f}.hdf5'),
+                        ModelCheckpoint('./weights/weights.{epoch:03d}-{val_loss:.2f}-{val_mean_iou:.2f}.hdf5'),
                         CSVLogger('train.log.csv'),
                         #Peek('/hdd/dataset/nuclei_dataset/vis', 10)
                         Peek('./vis', 10)
